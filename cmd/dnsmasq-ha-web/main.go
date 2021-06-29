@@ -91,6 +91,7 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	// Handle the static web assets here
 	assetHandler := http.FileServer(getFileSystem())
