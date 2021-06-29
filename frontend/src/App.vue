@@ -104,7 +104,7 @@ export default {
         edit: true
       });
     },
-    apply() {
+    async apply() {
 
     },
     tableRowClass({ row }) {
