@@ -4,8 +4,18 @@
       <el-row type="flex" class="row-bg" justify="space-between">
         <el-col :span="6"><el-image :src="src" class="logo" /></el-col>
         <el-col :span="6">
-          <el-button type="primary" icon="el-icon-plus" circle @click="addRow()"></el-button>
-          <el-button type="success" icon="el-icon-check" circle @click="apply()"></el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-plus"
+            circle
+            @click="addRow()"
+          ></el-button>
+          <el-button
+            type="success"
+            icon="el-icon-check"
+            circle
+            @click="apply()"
+          ></el-button>
         </el-col>
       </el-row>
     </el-header>
@@ -14,6 +24,7 @@
       <el-table
         :data="tableData"
         :row-class-name="tableRowClass"
+        v-loading="loading"
         border
         style="width: 100%"
       >
@@ -43,7 +54,12 @@
                 circle
                 @click="submitRow(row)"
               ></el-button>
-              <el-button icon="el-icon-close" size="mini" circle @click="cancelEdit(row)"></el-button>
+              <el-button
+                icon="el-icon-close"
+                size="mini"
+                circle
+                @click="cancelEdit(row)"
+              ></el-button>
             </template>
             <el-button
               v-else
@@ -77,8 +93,8 @@
   </el-container>
 </template>
 <script>
-import { ref } from "vue";
 import logo from "./assets/logo.png";
+import hosts from "./apis/hosts";
 
 export default {
   name: "App",
@@ -86,26 +102,36 @@ export default {
   methods: {
     startEdit(row) {
       row.edit = true;
-      console.log(row.ip);
+      this.currentRow = row;
     },
     cancelEdit(row) {
+      row = this.currentRow;
       row.edit = false;
-      console.log(row.ip);
+      this.currentRow = undefined;
     },
     submitRow(row) {
       console.log(row);
       row.edit = false;
+      this.currentRow = undefined;
     },
     confirmDelete(row) {
       console.log("Delete", row);
     },
     addRow() {
-      this.tableData.unshift({
-        edit: true
-      });
+      this.currentRow = {
+        edit: true,
+      };
+      this.tableData.unshift(this.currentRow);
     },
     async apply() {
-
+      hosts.applyChange().then(() => {
+        this.$notify({
+          title: "Success",
+          message: "Apply DNS successfully",
+          type: "success",
+          offset: 50,
+        });
+      });
     },
     tableRowClass({ row }) {
       if (row.edit) {
@@ -117,26 +143,22 @@ export default {
   data() {
     return {
       src: logo,
-      tableData: [
-        {
-          ip: "1.1.1.1",
-          fqdn: "baidu.com",
-          edit: false,
-        },
-      ],
+      tableData: [],
+      loading: false,
+      currentRow: undefined,
     };
   },
+  created() {
+    this.loading = true;
+    hosts
+      .getHosts()
+      .then((response) => (this.tableData = response.data))
+      .finally(() => {
+        this.loading = false;
+      });
+  },
   setup() {
-    const msg = ref(
-      "Welcome to Element Plus, a Vue 3.0 based component library"
-    );
-    const startHacking = () => {
-      msg.value = "Start coding with Element Plus with 💖";
-    };
-    return {
-      msg,
-      startHacking,
-    };
+    return {};
   },
 };
 </script>

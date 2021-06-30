@@ -37,7 +37,7 @@ func getFileSystem() http.FileSystem {
 }
 
 var dbFile = "./hosts.db"
-var hostFile = "/etc/dnsmasq.hosts"
+var hostFile = "/etc/dnsmasq-ha-web/hosts"
 
 func init() {
 	getopt.Flag(&dbFile, 'f', "The sqlite3 db file path")
