@@ -34,15 +34,24 @@ func getFileSystem() http.FileSystem {
 	if err != nil {
 		panic(err)
 	}
+	fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		fmt.Printf("path=%q, isDir=%v\n", path, d.IsDir())
+		return nil
+	})
 	return http.FS(fsys)
 }
 
 var dbFile = "./hosts.db"
 var hostFile = "/etc/dnsmasq-ha-web/hosts"
+var port = 80
 
 func init() {
 	getopt.Flag(&dbFile, 'f', "The sqlite3 db file path")
 	getopt.Flag(&hostFile, 'h', "The hosts file used for dnsmasq")
+	getopt.Flag(&port, 'p', "The server port to listening")
 }
 
 func main() {
@@ -94,10 +103,6 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	// Handle the static web assets here
-	assetHandler := http.FileServer(getFileSystem())
-	e.GET("/", echo.WrapHandler(assetHandler))
-
 	// Handle hosts requests
 	e.POST("/hosts", func(c echo.Context) error {
 		return createHost(c, &dbAPI)
@@ -119,5 +124,9 @@ func main() {
 		return generateHosts(c, &dbAPI, hostFile)
 	})
 
-	e.Logger.Fatal(e.Start(":80"))
+	// Handle the static web assets here
+	assetHandler := http.FileServer(getFileSystem())
+	e.GET("/*", echo.WrapHandler(assetHandler))
+
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
 }
