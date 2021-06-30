@@ -20,7 +20,7 @@ func createHost(c echo.Context, dbAPI *HostAPI) error {
 	if err := c.Bind(h); err != nil {
 		return err
 	}
-	id, err := dbAPI.CreateHost(h.IP, h.FQDN)
+	id, err := dbAPI.CreateHost(h.IP, h.FQDN, h.COMMENT)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func updateHost(c echo.Context, dbAPI *HostAPI) error {
 	}
 	id, _ := strconv.Atoi(c.Param("id"))
 	h.ID = id
-	_, err := dbAPI.UpdateHost(int64(id), h.IP, h.FQDN)
+	_, err := dbAPI.UpdateHost(int64(id), h.IP, h.FQDN, h.COMMENT)
 	if err != nil {
 		return err
 	}

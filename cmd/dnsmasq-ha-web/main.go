@@ -22,9 +22,10 @@ import (
 
 type (
 	host struct {
-		ID   int    `json:"id"`
-		IP   string `json:"ip"`
-		FQDN string `json:"fqdn"`
+		ID      int    `json:"id"`
+		IP      string `json:"ip"`
+		FQDN    string `json:"fqdn"`
+		COMMENT string `json:"comment"`
 	}
 )
 

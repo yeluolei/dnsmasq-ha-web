@@ -8,6 +8,7 @@
             type="primary"
             icon="el-icon-plus"
             circle
+            :disabled="currentRow != undefined"
             @click="addRow()"
           ></el-button>
           <el-button
@@ -25,7 +26,7 @@
         :data="tableData"
         :row-class-name="tableRowClass"
         v-loading="loading"
-        border
+        stripe="true"
         style="width: 100%"
       >
         <el-table-column label="IP">
@@ -44,6 +45,14 @@
             <span v-else>{{ row.fqdn }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="Comment">
+          <template v-slot="{ row }">
+            <template v-if="row.edit">
+              <el-input v-model="row.comment" class="edit-input" size="small" />
+            </template>
+            <span v-else>{{ row.comment }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Actions">
           <template v-slot="{ row }">
             <template v-if="row.edit">
@@ -52,6 +61,7 @@
                 icon="el-icon-check"
                 size="mini"
                 circle
+                native-type="submit"
                 @click="submitRow(row)"
               ></el-button>
               <el-button
@@ -61,31 +71,32 @@
                 @click="cancelEdit(row)"
               ></el-button>
             </template>
-            <el-button
-              v-else
-              type="primary"
-              icon="el-icon-edit"
-              size="mini"
-              circle
-              @click="startEdit(row)"
-            ></el-button>
-            <el-popconfirm
-              confirmButtonText="OK"
-              cancelButtonText="Cancel"
-              icon="el-icon-info"
-              iconColor="red"
-              title="Are you sure you want to delete this item?"
-              @confirm="confirmDelete(row)"
-            >
-              <template #reference>
-                <el-button
-                  type="danger"
-                  icon="el-icon-delete"
-                  size="mini"
-                  circle
-                ></el-button>
-              </template>
-            </el-popconfirm>
+            <template v-if="currentRow == undefined">
+              <el-button
+                type="primary"
+                icon="el-icon-edit"
+                size="mini"
+                circle
+                @click="startEdit(row)"
+              ></el-button>
+              <el-popconfirm
+                confirmButtonText="OK"
+                cancelButtonText="Cancel"
+                icon="el-icon-info"
+                iconColor="red"
+                title="Are you sure you want to delete this item?"
+                @confirm="confirmDelete(row)"
+              >
+                <template #reference>
+                  <el-button
+                    type="danger"
+                    icon="el-icon-delete"
+                    size="mini"
+                    circle
+                  ></el-button>
+                </template>
+              </el-popconfirm>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -100,6 +111,15 @@ export default {
   name: "App",
   components: {},
   methods: {
+    handleError(error) {
+      console.log(error)
+      this.$notify({
+        title: "Error",
+        message: error.message,
+        type: "error",
+        offset: 50,
+      });
+    },
     startEdit(row) {
       row.edit = true;
       this.currentRow = row;
@@ -109,13 +129,47 @@ export default {
       row.edit = false;
       this.currentRow = undefined;
     },
-    submitRow(row) {
-      console.log(row);
+    async submitRow(row) {
+      // undefined id means this is a new row
+      if (this.currentRow.id == undefined) {
+        hosts.createHost(row).then(response => {
+          this.tableData = this.tableData.filter(item => item.id != undefined);
+          this.tableData.unshift(response.data);
+          this.$notify({
+            title: "Success",
+            message: "Create successfully",
+            type: "success",
+            offset: 50,
+          });
+        }).catch(error => this.handleError(error))
+      }
+      else {
+        hosts.updateHost(row).then(response => {
+          row = response.data;
+          this.tableData[this.tableData.findIndex(item => item.id == row.id)] = row;
+          this.$notify({
+            title: "Success",
+            message: "Update successfully",
+            type: "success",
+            offset: 50,
+          });
+        }).catch(error => this.handleError(error))
+      }
       row.edit = false;
       this.currentRow = undefined;
     },
-    confirmDelete(row) {
-      console.log("Delete", row);
+    async confirmDelete(row) {
+      hosts.deleteHost(row.id).then(
+        () => {
+          this.tableData = this.tableData.filter(item => item.id != row.id);
+          this.$notify({
+            title: "Success",
+            message: "Delete successfully",
+            type: "success",
+            offset: 50,
+          });
+        }
+      ).catch(error => this.handleError(error));
     },
     addRow() {
       this.currentRow = {
@@ -131,7 +185,7 @@ export default {
           type: "success",
           offset: 50,
         });
-      });
+      }).catch(error => this.handleError(error));
     },
     tableRowClass({ row }) {
       if (row.edit) {
@@ -153,6 +207,7 @@ export default {
     hosts
       .getHosts()
       .then((response) => (this.tableData = response.data))
+      .catch(response => this.handleError(response))
       .finally(() => {
         this.loading = false;
       });
@@ -171,9 +226,21 @@ export default {
   text-align: center;
   color: #2c3e50;
 }
+.el-main {
+  padding: 0;
+}
+.row-bg {
+  height: 50px;
+}
 .logo {
   width: 50%;
 }
+
+.logo > img {
+  height: 80px;
+  width: auto;
+}
+
 .edit-row > td,
 .edit-row:hover > td {
   background-color: #fdf6ec !important;
