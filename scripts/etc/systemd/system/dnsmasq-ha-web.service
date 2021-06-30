@@ -1,0 +1,13 @@
+[Unit]
+Description=dnsmasq high avaiablitiy web server
+After=network.target sshd.service
+
+[Service]
+ExecStart=/usr/local/bin/dnsmasq-ha-web
+KillMode=process
+Restart=on-failure
+Type=notify
+
+[Install]
+WantedBy=multi-user.target
+Alias=dnsmasq-ha-web.service

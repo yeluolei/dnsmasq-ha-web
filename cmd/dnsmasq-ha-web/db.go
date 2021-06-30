@@ -8,14 +8,14 @@ type HostAPI struct {
 	db *sql.DB
 }
 
-func (h *HostAPI) CreateHost(ip string, fqdn string) (int64, error) {
-	stmt, err := h.db.Prepare("INSERT INTO hosts VALUES(NULL, ?, ?)")
+func (h *HostAPI) CreateHost(ip string, fqdn string, comment string) (int64, error) {
+	stmt, err := h.db.Prepare("INSERT INTO hosts VALUES(NULL, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(ip, fqdn)
+	res, err := stmt.Exec(ip, fqdn, comment)
 	if err != nil {
 		return 0, err
 	}
@@ -28,14 +28,14 @@ func (h *HostAPI) CreateHost(ip string, fqdn string) (int64, error) {
 	return id, nil
 }
 
-func (h *HostAPI) UpdateHost(id int64, ip string, fqdn string) (int64, error) {
-	stmt, err := h.db.Prepare("UPDATE hosts SET ip=?, fqdn=? WHERE id=?")
+func (h *HostAPI) UpdateHost(id int64, ip string, fqdn string, comment string) (int64, error) {
+	stmt, err := h.db.Prepare("UPDATE hosts SET ip=?, fqdn=?, comment=? WHERE id=?")
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(ip, fqdn, id)
+	res, err := stmt.Exec(ip, fqdn, comment, id)
 	if err != nil {
 		return 0, err
 	}
@@ -50,7 +50,7 @@ func (h *HostAPI) UpdateHost(id int64, ip string, fqdn string) (int64, error) {
 
 func (h *HostAPI) QueryHosts() ([]host, error) {
 
-	rows, err := h.db.Query("SELECT * FROM hosts")
+	rows, err := h.db.Query("SELECT * FROM hosts ORDER BY id DESC")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (h *HostAPI) QueryHosts() ([]host, error) {
 	var currentHost host
 
 	for rows.Next() {
-		err = rows.Scan(&currentHost.ID, &currentHost.IP, &currentHost.FQDN)
+		err = rows.Scan(&currentHost.ID, &currentHost.IP, &currentHost.FQDN, &currentHost.COMMENT)
 		if err != nil {
 			return nil, err
 		}
