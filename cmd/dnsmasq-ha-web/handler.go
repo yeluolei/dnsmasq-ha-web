@@ -87,6 +87,7 @@ func generateHosts(c echo.Context, dbAPI *HostAPI, hostFilePath string) error {
 	}
 
 	os.Rename(file.Name(), hostFilePath)
+	os.Chmod(hostFilePath, 0666)
 
 	return c.NoContent(http.StatusOK)
 }
