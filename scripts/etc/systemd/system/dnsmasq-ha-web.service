@@ -6,7 +6,7 @@ After=network.target sshd.service
 ExecStart=/usr/local/bin/dnsmasq-ha-web
 KillMode=process
 Restart=on-failure
-Type=notify
+Type=simple
 
 [Install]
 WantedBy=multi-user.target

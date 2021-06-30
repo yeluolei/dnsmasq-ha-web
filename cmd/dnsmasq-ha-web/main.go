@@ -119,5 +119,5 @@ func main() {
 		return generateHosts(c, &dbAPI, hostFile)
 	})
 
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":80"))
 }
