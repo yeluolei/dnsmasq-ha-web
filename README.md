@@ -54,6 +54,7 @@ conflict.
 6. Copy the service config file in `scripts/etc/systemd/system/dnsmasq-ha-web.service` -> `/etc/systemd/system/dnsmasq-ha-web.service`
 7. Start the service and check the status
 
+       sudo systemctl daemon-reload
        sudo service dnsmasq-ha-web start
 
 
