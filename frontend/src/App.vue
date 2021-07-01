@@ -68,7 +68,7 @@
                 icon="el-icon-close"
                 size="mini"
                 circle
-                @click="cancelEdit(row)"
+                @click="cancelEdit()"
               ></el-button>
             </template>
             <template v-if="currentRow == undefined">
@@ -122,11 +122,11 @@ export default {
     },
     startEdit(row) {
       row.edit = true;
-      this.currentRow = row;
+      this.currentRow = Object.assign({}, row);
     },
-    cancelEdit(row) {
-      row = this.currentRow;
-      row.edit = false;
+    cancelEdit() {
+      this.currentRow.edit = false;
+      this.tableData[this.tableData.findIndex(item => item.id == this.currentRow.id)] = this.currentRow;
       this.currentRow = undefined;
     },
     async submitRow(row) {

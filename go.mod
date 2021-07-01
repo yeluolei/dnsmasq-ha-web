@@ -10,7 +10,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.7 // indirect
 	github.com/pborman/getopt/v2 v2.1.0 // indirect
 	github.com/snowflakedb/glog v0.0.0-20180824191149-f5055e6f21ce // indirect
-	github.com/txn2/txeh v1.3.0 // indirect
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect

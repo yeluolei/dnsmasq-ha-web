@@ -1,14 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/txn2/txeh"
 )
 
 //----------
@@ -70,20 +71,26 @@ func generateHosts(c echo.Context, dbAPI *HostAPI, hostFilePath string) error {
 		log.Fatal(err)
 	}
 
-	hostsFile, err := txeh.NewHosts(&txeh.HostsConfig{
-		ReadFilePath: file.Name(),
-	})
-
-	if err != nil {
-		return err
-	}
-
+	hostsMap := map[string][]string{}
 	for _, host := range hosts {
-		hostsFile.AddHost(host.IP, host.FQDN)
+		if currentLine, ok := hostsMap[host.IP]; ok {
+			hostsMap[host.IP] = append(currentLine, host.FQDN)
+		} else {
+			hostsMap[host.IP] = []string{host.FQDN}
+		}
 	}
 
-	if err := hostsFile.Save(); err != nil {
-		return err
+	hostLines := []string{}
+
+	for ip, fqdns := range hostsMap {
+		hostLines = append(hostLines, fmt.Sprintf("%-16s %s\n", ip, strings.Join(fqdns, " ")))
+	}
+
+	content := strings.Join(hostLines, "")
+
+	err = ioutil.WriteFile(file.Name(), []byte(content), 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	os.Rename(file.Name(), hostFilePath)
