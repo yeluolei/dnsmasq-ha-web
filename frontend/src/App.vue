@@ -125,8 +125,13 @@ export default {
       this.currentRow = Object.assign({}, row);
     },
     cancelEdit() {
-      this.currentRow.edit = false;
-      this.tableData[this.tableData.findIndex(item => item.id == this.currentRow.id)] = this.currentRow;
+      if (this.currentRow.id == undefined) {
+        this.tableData.shift();
+      }
+      else {
+        this.currentRow.edit = false;
+        this.tableData[this.tableData.findIndex(item => item.id == this.currentRow.id)] = this.currentRow;
+      }
       this.currentRow = undefined;
     },
     async submitRow(row) {
